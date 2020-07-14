@@ -59,6 +59,7 @@ export default {
     clickNode (data, node, treeNode) {
       if (!this.multiple) {
         const value = data[this.displayKey]
+        this.$refs.select.blur();
         this.$emit('change', value)
       }
       this.$emit('node-click', data, node, treeNode);
