@@ -1,11 +1,10 @@
 <template>
-  <el-select :value="value" class="el-select-tree" v-bind="selectOpt" ref="select" :multiple="multiple" value-key="label" @clear="clear" @remove-tag="removeTag">
-    <el-option style="display:none" value="0">
-    </el-option>
+  <el-select ref="select" :value="selectVal" class="el-select-tree" popper-class="el-select-tree-dropdown" v-bind="selectOpt" :multiple="multiple" value-key="label" @clear="clear" @remove-tag="removeTag">
+    <el-option style="display:none" value="0" />
     <el-tree ref="tree" v-bind="treeOpt" @check="handleTreeCheckChange" @node-click="clickNode">
       <span slot-scope="{ node, data }">
         <slot name="tree" v-bind="{node,data}">
-          <span :title="node.label">{{node.label}}</span>
+          <span :title="node.label">{{ node.label }}</span>
         </slot>
       </span>
     </el-tree>
@@ -29,16 +28,21 @@ export default {
       required: true
     }
   },
+  data () {
+    return {
+      selectVal: ''
+    }
+  },
   computed: {
     multiple () {
       return this.treeOpt.showCheckbox;
     },
-    displayKey () {
-      const { displayKey } = this.treeOpt;
-      if (!displayKey) {
-        throw new Error('need "displayKey" in treeOpt');
+    valueKey () {
+      const { valueKey } = this.treeOpt;
+      if (!valueKey) {
+        throw new Error('need "valueKey" in treeOpt');
       }
-      return displayKey
+      return valueKey
     }
   },
   methods: {
@@ -47,7 +51,7 @@ export default {
       for (let i = 0; i < nodes.length; i++) {
         const { children } = nodes[i];
         if (children) continue;
-        value.push(nodes[i][this.displayKey]);
+        value.push(nodes[i][this.valueKey]);
       }
       this.$emit('change', value)
     },
@@ -58,7 +62,8 @@ export default {
     },
     clickNode (data, node, treeNode) {
       if (!this.multiple) {
-        const value = data[this.displayKey]
+        const value = data[this.valueKey]
+        this.selectVal = data.label
         this.$refs.select.blur();
         this.$emit('change', value)
       }
@@ -70,12 +75,14 @@ export default {
           const checkedNodes = this.$refs.tree.getCheckedNodes();
           for (let i = 0; i < checkedNodes.length; i++) {
             const node = checkedNodes[i];
-            if (this.value.indexOf(node[this.displayKey]) > -1) {
+            if (this.value.indexOf(node[this.valueKey]) > -1) {
               this.$refs.tree.setChecked(node, false);
             }
           }
+          this.selectVal = []
           this.$emit('change', []);
         } else {
+          this.selectVal = ''
           this.$emit('change', '');
         }
         this.$emit('clear')
@@ -85,7 +92,7 @@ export default {
       const checkedNodes = this.$refs.tree.getCheckedNodes();
       for (let i = 0; i < checkedNodes.length; i++) {
         const node = checkedNodes[i];
-        if (node[this.displayKey] === label) {
+        if (node[this.valueKey] === label) {
           this.$refs.tree.setChecked(node, false);
         }
       }
@@ -95,5 +102,8 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style lang="scss">
+.el-select-tree-dropdown .el-tree {
+  padding: 0 8px;
+}
 </style>
